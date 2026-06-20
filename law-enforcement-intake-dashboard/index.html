@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LEA Operations Console</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark">OC</div>
+        <div>
+          <h1>LEA Ops Console</h1>
+          <p>Case intake, evidence, tasks, reports</p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-item active" data-view="dashboard" type="button"><span>01</span>Dashboard</button>
+        <button class="nav-item" data-view="cases" type="button"><span>02</span>Cases</button>
+        <button class="nav-item" data-view="evidence" type="button"><span>03</span>Evidence</button>
+        <button class="nav-item" data-view="tasks" type="button"><span>04</span>Tasks</button>
+        <button class="nav-item" data-view="people" type="button"><span>05</span>People</button>
+        <button class="nav-item" data-view="reports" type="button"><span>06</span>Reports</button>
+        <button class="nav-item" data-view="audit" type="button"><span>07</span>Audit</button>
+        <button class="nav-item" data-view="database" type="button"><span>08</span>Database</button>
+      </nav>
+
+      <div class="sidebar-card">
+        <strong>Demo scope</strong>
+        <p>Designed for lawful administrative workflows: intake, documentation, prioritization, and accountability.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Local demo system</p>
+          <h2 id="viewTitle">Dashboard</h2>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="seedBtn" type="button">Load demo data</button>
+          <button class="btn" id="printBtn" type="button">Print report</button>
+          <button class="btn primary" id="exportBtn" type="button">Export JSON</button>
+        </div>
+      </header>
+
+      <section class="view active" id="dashboardView" data-title="Dashboard">
+        <div class="metric-grid" id="metricGrid"></div>
+
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Priority queue</p>
+                <h3>Cases Requiring Review</h3>
+              </div>
+              <button class="btn small" data-view-jump="cases" type="button">Open cases</button>
+            </div>
+            <div id="priorityList" class="compact-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Workload</p>
+                <h3>Status Distribution</h3>
+              </div>
+            </div>
+            <div id="statusChart" class="bar-chart"></div>
+          </section>
+
+          <section class="panel wide">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Operational timeline</p>
+                <h3>Recent Activity</h3>
+              </div>
+            </div>
+            <div id="recentActivity" class="timeline"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="casesView" data-title="Cases">
+        <div class="split-layout">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">New record</p>
+                <h3>Case Intake</h3>
+              </div>
+            </div>
+            <form id="caseForm" class="form-grid">
+              <label>Case type
+                <select id="caseType" required>
+                  <option>Missing person</option>
+                  <option>Cyber fraud tip</option>
+                  <option>Public safety concern</option>
+                  <option>Evidence submission</option>
+                  <option>Witness statement</option>
+                </select>
+              </label>
+              <label>Subject
+                <input id="subject" maxlength="90" required placeholder="Person, event, or reference">
+              </label>
+              <label>Location
+                <input id="location" maxlength="90" placeholder="City, area, venue, or online">
+              </label>
+              <label>Reporter contact
+                <input id="contact" maxlength="90" placeholder="Phone, email, desk, or badge ID">
+              </label>
+              <label class="full">Facts reported
+                <textarea id="summary" maxlength="1200" required placeholder="Record facts, source, time, and what has been verified."></textarea>
+              </label>
+              <fieldset class="full risk-fieldset">
+                <legend>Risk factors</legend>
+                <label><input id="riskDanger" type="checkbox"> Immediate welfare or safety risk</label>
+                <label><input id="riskVulnerable" type="checkbox"> Vulnerable person involved</label>
+                <label><input id="riskEvidence" type="checkbox"> Time-sensitive evidence</label>
+                <label><input id="riskVerified" type="checkbox"> Verifiable details provided</label>
+              </fieldset>
+              <div class="score-card full">
+                <span>Calculated priority</span>
+                <strong id="scorePreview">20</strong>
+                <p id="scoreReason">Base score plus selected risk factors.</p>
+              </div>
+              <button class="btn primary full" type="submit">Create case</button>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Search and triage</p>
+                <h3>Case Queue</h3>
+              </div>
+              <span class="pill info" id="caseCount">0 cases</span>
+            </div>
+            <div class="filters">
+              <input id="caseSearch" placeholder="Search cases">
+              <select id="caseStatusFilter">
+                <option value="All">All statuses</option>
+                <option>Open</option>
+                <option>Assigned</option>
+                <option>Review</option>
+                <option>Closed</option>
+              </select>
+              <select id="caseSort">
+                <option value="priority">Priority first</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+            </div>
+            <div id="caseList" class="record-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="evidenceView" data-title="Evidence">
+        <div class="split-layout">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Chain of custody</p>
+                <h3>Evidence Entry</h3>
+              </div>
+            </div>
+            <form id="evidenceForm" class="form-grid">
+              <label>Linked case
+                <select id="evidenceCase" required></select>
+              </label>
+              <label>Evidence type
+                <select id="evidenceType" required>
+                  <option>Document</option>
+                  <option>Photo or video</option>
+                  <option>Device</option>
+                  <option>Digital artifact</option>
+                  <option>Physical item</option>
+                </select>
+              </label>
+              <label>Item label
+                <input id="evidenceLabel" maxlength="90" required placeholder="Example: CCTV export, screenshot set">
+              </label>
+              <label>Received from
+                <input id="receivedFrom" maxlength="90" required placeholder="Reporter, unit, or agency">
+              </label>
+              <label class="full">Description
+                <textarea id="evidenceDescription" maxlength="900" required placeholder="Condition, source, storage location, hash/reference if available."></textarea>
+              </label>
+              <button class="btn primary full" type="submit">Log evidence</button>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Register</p>
+                <h3>Evidence Ledger</h3>
+              </div>
+              <span class="pill info" id="evidenceCount">0 items</span>
+            </div>
+            <div id="evidenceList" class="record-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="tasksView" data-title="Tasks">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Follow-up control</p>
+              <h3>Task Board</h3>
+            </div>
+          </div>
+          <form id="taskForm" class="task-form">
+            <select id="taskCase" required></select>
+            <input id="taskText" maxlength="120" required placeholder="Follow-up task">
+            <input id="taskOwner" maxlength="60" placeholder="Owner or unit">
+            <input id="taskDue" type="date">
+            <button class="btn primary" type="submit">Add task</button>
+          </form>
+          <div id="taskBoard" class="kanban"></div>
+        </div>
+      </section>
+
+      <section class="view" id="peopleView" data-title="People & Entities">
+        <div class="split-layout">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Directory</p>
+                <h3>Person or Entity Record</h3>
+              </div>
+            </div>
+            <form id="personForm" class="form-grid">
+              <label>Name or entity
+                <input id="personName" maxlength="90" required placeholder="Reporter, witness, unit, or organization">
+              </label>
+              <label>Role
+                <select id="personRole" required>
+                  <option>Reporter</option>
+                  <option>Witness</option>
+                  <option>Officer or unit</option>
+                  <option>Partner agency</option>
+                  <option>Organization</option>
+                  <option>Other contact</option>
+                </select>
+              </label>
+              <label>Linked case
+                <select id="personCase"></select>
+              </label>
+              <label>Contact
+                <input id="personContact" maxlength="90" placeholder="Phone, email, desk, or reference">
+              </label>
+              <label class="full">Notes
+                <textarea id="personNotes" maxlength="700" placeholder="Administrative notes, consent, availability, or contact instructions."></textarea>
+              </label>
+              <button class="btn primary full" type="submit">Save directory record</button>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Index</p>
+                <h3>Directory Records</h3>
+              </div>
+              <span class="pill info" id="peopleCount">0 records</span>
+            </div>
+            <div class="filters">
+              <input id="peopleSearch" placeholder="Search people, units, agencies">
+              <select id="peopleRoleFilter">
+                <option value="All">All roles</option>
+                <option>Reporter</option>
+                <option>Witness</option>
+                <option>Officer or unit</option>
+                <option>Partner agency</option>
+                <option>Organization</option>
+                <option>Other contact</option>
+              </select>
+              <select id="peopleSort">
+                <option value="newest">Newest first</option>
+                <option value="name">Name A-Z</option>
+                <option value="role">Role A-Z</option>
+              </select>
+            </div>
+            <div id="peopleList" class="record-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="reportsView" data-title="Reports">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Supervisor ready</p>
+              <h3>Operational Brief</h3>
+            </div>
+            <button class="btn primary" id="copyBriefBtn" type="button">Copy brief</button>
+          </div>
+          <pre id="briefOutput" class="brief"></pre>
+        </div>
+      </section>
+
+      <section class="view" id="auditView" data-title="Audit">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Accountability</p>
+              <h3>Audit Trail</h3>
+            </div>
+            <button class="btn" id="clearBtn" type="button">Reset demo data</button>
+          </div>
+          <div id="auditList" class="timeline"></div>
+        </div>
+      </section>
+
+      <section class="view" id="databaseView" data-title="Database">
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Storage engine</p>
+                <h3>Browser Database</h3>
+              </div>
+              <span class="pill info" id="dbStatus">Starting</span>
+            </div>
+            <div class="database-grid" id="dbStats"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Backup and restore</p>
+                <h3>Data Controls</h3>
+              </div>
+            </div>
+            <div class="database-actions">
+              <button class="btn primary" id="dbBackupBtn" type="button">Download backup</button>
+              <button class="btn" id="dbImportBtn" type="button">Import backup</button>
+              <button class="btn" id="dbCompactBtn" type="button">Run integrity check</button>
+              <input id="dbImportFile" type="file" accept="application/json" hidden>
+            </div>
+            <div class="database-note">
+              <strong>Storage mode</strong>
+              <p>The app stores data in IndexedDB first, with localStorage as a fallback mirror for compatibility. Nothing is sent to a server.</p>
+            </div>
+          </section>
+
+          <section class="panel wide">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Cross-record index</p>
+                <h3>Database Search</h3>
+              </div>
+            </div>
+            <div class="filters">
+              <input id="dbSearch" placeholder="Search cases, evidence, tasks, people, audit">
+            </div>
+            <div id="dbSearchResults" class="record-list"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="caseModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Case workspace</p>
+          <h3 id="modalTitle">Case details</h3>
+        </div>
+        <button class="btn" id="closeModal" type="button">Close</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="src/db.js" defer></script>
+  <script src="src/app.js" defer></script>
+</body>
+</html>
